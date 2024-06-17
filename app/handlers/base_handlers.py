@@ -1,9 +1,9 @@
 from aiogram import Router, types, F, Bot
 
 from aiogram.filters import CommandStart
-from app.sheduler.sheduler import scheduler
+
+# from app.sheduler.sheduler import scheduler
 from app.services.services import chat_members, send_message_to_admin
-from app.crud.user import user_crud
 from app.crud.group import crud_group
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,24 +14,17 @@ user_list: dict[dict] = {}
 check_user_list: list[int] = []  # Список пользователей которые отписались
 
 
-# При запуске бота полуучить список чатов в которых находится бот
-# Получить список пользователей для каждого чата, записать их в базу
-# Получить список админов для каждого чата, записать их в базу
-# По событию добавления бота админом в группе получить список пользователей чата, записать их в базу
-# перед этим проверить на дубликаты
-# сделать по событию добавления бота админом
 @router.message(CommandStart())
 async def start(message: types.Message, session: AsyncSession):
-    chat_id = message.chat.id
-    chat_name = message.chat.title if message.chat.title else 'Unknown'
-
-    user_data = await chat_members(chat_id)
-
+    chat: types.Chat = message.chat  # Объект чата из которого отправлена команда start
+    user_data = await chat_members(
+        chat.id
+    )  # Функция возвращает список пользователей из чата
     await crud_group.add_chat_members_to_db(
-        chat_id=chat_id, chat_name=chat_name, user_data=user_data, session=session
-    )
+        chat=chat, user_data=user_data, session=session
+    )  # Записывает пользователей в базу данных связывая их с группой
 
-    await message.reply('Участники чата успешно сохранены в базу данных.')
+    # await message.reply('Участники чата успешно сохранены в базу данных.')
 
 
 @router.message(F.text.contains('Порядок') | F.text.contains('порядок'))

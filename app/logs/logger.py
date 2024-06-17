@@ -15,6 +15,6 @@ def configure_logging(name):
     logging.basicConfig(
         datefmt=DT_LOGS_FORMAT,
         format=LOG_FORMAT,
-        level=logging.DEBUG,
+        level=logging.INFO,
         handlers=[rotating_handler],
     )

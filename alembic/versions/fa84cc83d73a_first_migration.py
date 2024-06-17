@@ -1,8 +1,8 @@
 """First migration
 
-Revision ID: 3a90b0f15588
+Revision ID: fa84cc83d73a
 Revises: 
-Create Date: 2024-06-12 00:06:36.702144
+Create Date: 2024-06-17 01:07:09.346405
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '3a90b0f15588'
+revision: str = 'fa84cc83d73a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,11 +28,13 @@ def upgrade() -> None:
     sa.UniqueConstraint('group_id')
     )
     op.create_table('user',
-    sa.Column('user_name', sa.String(length=100), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('user_name', sa.String(length=100), nullable=True),
     sa.Column('first_name', sa.String(length=100), nullable=True),
     sa.Column('last_name', sa.String(length=100), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('user_id')
     )
     op.create_table('usergroupassociation',
     sa.Column('user_id', sa.Integer(), nullable=False),
@@ -40,9 +42,10 @@ def upgrade() -> None:
     sa.Column('is_admin', sa.Boolean(), nullable=True),
     sa.Column('can_receive_messages', sa.Boolean(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['group_id'], ['group.group_id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.user_id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('user_id', 'group_id', name='unique_user_group_association')
     )
     # ### end Alembic commands ###
 

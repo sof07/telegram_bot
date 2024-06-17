@@ -1,5 +1,6 @@
 from pyrogram import Client
 from pyrogram.types import ChatMember
+from pyrogram.enums import ChatMemberStatus
 from aiogram import types, Bot
 
 from app.core.config import settings
@@ -12,15 +13,9 @@ bot_token = settings.management_bot_token
 
 # Функция проверки статуса пользователя (админ или создатель)
 async def is_admin_or_creator(member: ChatMember) -> bool:
-    # Проверить статус
-    print('==============================')
-    print(f'Проверка статуса админ или создатель {member.status in (
-        'ChatMemberStatus.OWNER',
-        'ChatMemberStatus.ADMINISTRATOR',
-    )}')
-    return member.status in (
-        'ChatMemberStatus.OWNER',
-        'ChatMemberStatus.ADMINISTRATOR',
+    return str(member.status.name) in (
+        'OWNER',
+        'ADMINISTRATOR',
     )
 
 
