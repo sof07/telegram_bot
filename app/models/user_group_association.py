@@ -25,3 +25,7 @@ class UserGroupAssociation(Base):
         'Group',
         back_populates='users',
     )
+
+    def __repr__(self):
+        # При вывде объекта на печать. возвращает человекочитаемый текст о нем
+        return f'Пользователь с id {self.user_id}, в группе с id {self.group_id}, admin: {self.is_admin}'

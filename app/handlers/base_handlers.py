@@ -5,6 +5,7 @@ from aiogram.filters import CommandStart
 # from app.sheduler.sheduler import scheduler
 from app.services.services import chat_members, send_message_to_admin
 from app.crud.group import crud_group
+from app.crud.user_group_association import crud_user_group_association
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # from app.keyboards.inline_keyboard import kb_analytics
@@ -17,24 +18,38 @@ check_user_list: list[int] = []  # Список пользователей ко�
 @router.message(CommandStart())
 async def start(message: types.Message, session: AsyncSession):
     chat: types.Chat = message.chat  # Объект чата из которого отправлена команда start
-    user_data = await chat_members(
-        chat.id
-    )  # Функция возвращает список пользователей из чата
+    # Функция возвращает список пользователей из чата
+    user_data = await chat_members(chat.id)
+    # Записывает пользователей в базу данных связывая их с группой
     await crud_group.add_chat_members_to_db(
         chat=chat, user_data=user_data, session=session
-    )  # Записывает пользователей в базу данных связывая их с группой
-
+    )
+    # user_canrecive_message = (
+    #     await crud_user_group_association.get_user_canrecive_message_false(
+    #         group_id=chat.id, session=session
+    #     )
+    # )
+    # for user in user_canrecive_message:
+    #     print(f'{user.user}, id -> ')
+    # await crud_user_group_association.set_all_can_receive_messages_false(
+    #     session=session
+    # )
+    # await send_message_to_admin(message=message, session=session)
     # await message.reply('Участники чата успешно сохранены в базу данных.')
 
 
 @router.message(F.text.contains('Порядок') | F.text.contains('порядок'))
-async def message_photo_caption_please(message: types.Message, bot: Bot):
-    check_user_list.append(message.from_user.id)
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        text=f'Пользователь {message.from_user.username} +',
+async def message_photo_caption_please(
+    message: types.Message, session: AsyncSession
+) -> None:
+    group_id: int = message.chat.id
+    user_id: int = message.from_user.id
+    session = session
+    await crud_user_group_association.update_status_can_receive_messages_true(
+        group_id,
+        user_id,
+        session,
     )
-    print(check_user_list)
 
 
 # Админы:

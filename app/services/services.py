@@ -13,6 +13,8 @@ bot_token = settings.management_bot_token
 
 # Функция проверки статуса пользователя (админ или создатель)
 async def is_admin_or_creator(member: ChatMember) -> bool:
+    """Получает статус пользователя и проверяет его на админа или создателя."""
+
     return str(member.status.name) in (
         'OWNER',
         'ADMINISTRATOR',
@@ -21,6 +23,8 @@ async def is_admin_or_creator(member: ChatMember) -> bool:
 
 # Функция получения участников чата
 async def chat_members(chat_id):
+    """Получает список участников чата."""
+
     user_data: list[dict] = []
     app = Client(
         'Имя_Бот',
