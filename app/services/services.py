@@ -1,7 +1,6 @@
 from pyrogram import Client
 from pyrogram.types import ChatMember
-from pyrogram.enums import ChatMemberStatus
-from aiogram import types, Bot
+from aiogram import Bot
 
 from app.core.config import settings
 
@@ -22,7 +21,7 @@ async def is_admin_or_creator(member: ChatMember) -> bool:
 
 
 # Функция получения участников чата
-async def chat_members(chat_id):
+async def chat_members(chat_id: int) -> list[dict]:
     """Получает список участников чата."""
 
     user_data: list[dict] = []
@@ -50,16 +49,19 @@ async def chat_members(chat_id):
 
 
 async def send_message_to_admin(
-    user_list: list[dict, dict],
-    check_user_list: list[int],
+    admin_list: list[int],
+    user_list: list[str],
     bot: Bot,
-    message: types.Message,
-):
-    diff_set = set(user_list.keys()).difference(set(check_user_list))
-    list_user_name = []
-    for id in diff_set:
-        list_user_name.append(user_list[id]['user_name'])
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        text=f'Не отписавшиеся пользователи: {list_user_name}',
-    )
+) -> None:
+    text_if_user_list: str = 'Список засранцев:'
+    text_if_not_user_list: str = 'Сегодня все молодцы!'
+    if admin_list:
+        for admin_id in admin_list:
+            if user_list:
+                await bot.send_message(
+                    chat_id=admin_id, text=f'{text_if_user_list} {user_list}'
+                )
+            else:
+                await bot.send_message(
+                    chat_id=admin_id, text=f'{text_if_not_user_list}'
+                )

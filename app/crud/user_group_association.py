@@ -40,9 +40,11 @@ class CRUDUserGroupAssociation(CRUDBase):
         )
         return user_group_association.scalars().first()
 
-    async def get_user_canrecive_message_false(
+    async def get_user_canrecive_message_status(
         self,
         group_id: int,
+        status: bool,
+        is_admin: bool,
         session: AsyncSession,
     ) -> list[UserGroupAssociation]:
         """ "
@@ -55,7 +57,11 @@ class CRUDUserGroupAssociation(CRUDBase):
                 selectinload(self.model.user)
             )  # для получения связаных данных из модели user
             .where(
-                and_(self.model.group_id == group_id, self.model.can_receive_messages)
+                and_(
+                    self.model.group_id == group_id,
+                    self.model.can_receive_messages == status,
+                    self.model.is_admin == is_admin,
+                )
             )
         )
         return user_canrecive_message.scalars().all()
