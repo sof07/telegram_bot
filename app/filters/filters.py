@@ -17,4 +17,5 @@ class IsAdmin(BaseFilter):
         member = await message.bot.get_chat_member(
             message.chat.id, message.from_user.id
         )
+        print(member.status)
         return member.status in ['administrator', 'creator']

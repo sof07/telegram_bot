@@ -1,13 +1,14 @@
-from app.models.group import Group
-from app.crud.base import CRUDBase
-from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram import types
 from sqlalchemy import and_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
+from app.crud.base import CRUDBase
 from app.crud.user import user_crud
 from app.crud.user_group_association import crud_user_group_association
-from sqlalchemy.future import select
+from app.models.group import Group
 from app.models.user import User
 from app.models.user_group_association import UserGroupAssociation
-from aiogram import types
 
 
 class CRUDGroup(CRUDBase):

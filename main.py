@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.core.db import AsyncSessionLocal
 
 
-from app.handlers import base_handlers
+from app.handlers import base_handlers, handlers
 from app.keyboards.set_menu import main_menu
 
 from app.middlewares.middleware import DataBaseSession
@@ -26,7 +26,8 @@ async def main():
     scheduler.start()
     dp.update.middleware(DataBaseSession(async_session=AsyncSessionLocal))
     dp.include_router(base_handlers.router)
-    # dp.include_router(handlers.router)
+    dp.include_router(handlers.router)
+    # dp.include_router(chat_member_handlers.router)
 
     dp.startup.register(main_menu)
     scheduler.add_job(scheduled_task, 'cron', hour=00, minute=55, args=[bot])

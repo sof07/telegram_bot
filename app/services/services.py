@@ -1,13 +1,28 @@
 from pyrogram import Client
 from pyrogram.types import ChatMember
 from aiogram import Bot
-
+from pyrogram import utils
 from app.core.config import settings
 
 
 api_id = settings.api_id
 api_hash = settings.api_hash
 bot_token = settings.management_bot_token
+
+
+# Исправляет ошибку в библиотеке pyrogram которая
+# вызывает исключение Peer id invalid:
+def get_peer_type_new(peer_id: int) -> str:
+    peer_id_str = str(peer_id)
+    if not peer_id_str.startswith('-'):
+        return 'user'
+    elif peer_id_str.startswith('-100'):
+        return 'channel'
+    else:
+        return 'chat'
+
+
+utils.get_peer_type = get_peer_type_new
 
 
 # Функция проверки статуса пользователя (админ или создатель)
