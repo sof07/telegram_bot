@@ -15,6 +15,7 @@ async def scheduled_task(bot: Bot) -> None:
     async with AsyncSessionLocal() as session:
         all_groups: list[Group] | None = await crud_group.get_multi(session)
         for group in all_groups:
+            # Получаем список админов и пользователей
             admin_list: (
                 list[UserGroupAssociation] | None
             ) = await crud_user_group_association.get_user_canrecive_message_status(
@@ -23,6 +24,7 @@ async def scheduled_task(bot: Bot) -> None:
                 is_admin=True,
                 session=session,
             )
+            # Получаем список пользователей, без админов
             user_list: (
                 list[UserGroupAssociation] | None
             ) = await crud_user_group_association.get_user_canrecive_message_status(
@@ -31,10 +33,13 @@ async def scheduled_task(bot: Bot) -> None:
                 is_admin=False,
                 session=session,
             )
+            # Получаем список id админов
             list_admin_id: list[int] | None = [user.user.user_id for user in admin_list]
+            # Получаем список id пользователей
             list_user_first_name: list[str] | None = [
                 user.user.first_name for user in user_list
             ]
+            # Отправляю админам сообщение со списком неотписавшихся пользователей
             await send_message_to_admin(
                 admin_list=list_admin_id, user_list=list_user_first_name, bot=bot
             )

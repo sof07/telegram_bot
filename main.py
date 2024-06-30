@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.core.db import AsyncSessionLocal
 
 
-from app.handlers import base_handlers, handlers
+from app.handlers import base_handlers, handlers, chat_member_handlers, callback
 from app.keyboards.set_menu import main_menu
 
 from app.middlewares.middleware import DataBaseSession
@@ -23,15 +23,14 @@ async def main():
     logging.info('Запуск бота - management_bot.')
     bot = Bot(token=settings.management_bot_token)
     dp = Dispatcher(bot=bot)
-    scheduler.start()
+    scheduler.start()  # Запуск планировщика задач
     dp.update.middleware(DataBaseSession(async_session=AsyncSessionLocal))
-    dp.include_router(base_handlers.router)
+    dp.include_router(base_handlers.router)  # Регистрация хендлеров
     dp.include_router(handlers.router)
-    # dp.include_router(chat_member_handlers.router)
-
-    dp.startup.register(main_menu)
+    dp.include_router(chat_member_handlers.router)
+    dp.include_router(callback.router)
+    dp.startup.register(main_menu)  # Регистрация меню (команда /start, /help и прочие)
     scheduler.add_job(scheduled_task, 'cron', hour=00, minute=55, args=[bot])
-    # await create_db()
     await dp.start_polling(bot)
 
 

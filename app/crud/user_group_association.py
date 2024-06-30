@@ -95,21 +95,32 @@ class CRUDUserGroupAssociation(CRUDBase):
         )
         await session.commit()
 
-    # async def create(
-    #     self,
-    #     user: User,
-    #     group: Group,
-    #     session: AsyncSession,
-    #     is_admin: bool = False,
-    # ):
-    #     db_obj: UserGroupAssociation = self.model(
-    #         user=user, group=group, is_admin=is_admin
-    #     )
-
-    #     session.add(db_obj)
-    #     await session.commit()
-    #     await session.refresh(db_obj)
-    #     return db_obj
+    async def get_chat_where_user_admin(
+        self,
+        user_id: int,
+        session: AsyncSession,
+    ) -> UserGroupAssociation | None:
+        """
+        Возвращает чат, где пользователь является администратором.
+        Аргументы:
+        user_id  - id пользователя
+        Возвращает:
+            chat: Group | None
+        """
+        chat_where_user_admin: UserGroupAssociation | None = await session.execute(
+            select(self.model)
+            .options(
+                selectinload(self.model.group)
+            )  # для получения связаных данных из модели user
+            .where(
+                and_(
+                    self.model.user_id == user_id,
+                    self.model.is_admin,
+                )
+            )
+        )
+        # print(chat_where_user_admin.scalars().all())
+        return chat_where_user_admin.scalars().all()
 
 
 crud_user_group_association = CRUDUserGroupAssociation(UserGroupAssociation)
