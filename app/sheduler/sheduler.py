@@ -10,18 +10,17 @@ scheduler = AsyncIOScheduler()
 # Запуск планировщика для выполнения задачи каждый день в 20:00
 
 
-async def scheduled_task(bot: Bot) -> None:
+async def scheduled_task_send_message_to_admin(bot: Bot) -> None:
     """Отправляет список пользователей админу"""
     async with AsyncSessionLocal() as session:
         all_groups: list[Group] | None = await crud_group.get_multi(session)
         for group in all_groups:
-            # Получаем список админов и пользователей
+            # Получаем список пользователей для рассылки сообщений
             admin_list: (
                 list[UserGroupAssociation] | None
-            ) = await crud_user_group_association.get_user_canrecive_message_status(
+            ) = await crud_user_group_association.get_user_crceive_newsletter_status(
                 group_id=group.group_id,
-                status=False,
-                is_admin=True,
+                rceive_newsletter_status=True,
                 session=session,
             )
             # Получаем список пользователей, без админов
@@ -29,8 +28,8 @@ async def scheduled_task(bot: Bot) -> None:
                 list[UserGroupAssociation] | None
             ) = await crud_user_group_association.get_user_canrecive_message_status(
                 group_id=group.group_id,
-                status=False,
-                is_admin=False,
+                can_receive_messages_status=False,
+                rceive_newsletter_status=False,
                 session=session,
             )
             # Получаем список id админов
@@ -43,3 +42,11 @@ async def scheduled_task(bot: Bot) -> None:
             await send_message_to_admin(
                 admin_list=list_admin_id, user_list=list_user_first_name, bot=bot
             )
+
+
+async def reset_can_receive_messages() -> None:
+    async with AsyncSessionLocal() as session:
+        await crud_user_group_association.update_all_can_receive_messages_false(
+            session=session
+        )
+    print('YES')

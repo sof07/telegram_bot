@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.models.user import User
 from app.models.group import Group
+from aiogram import types
 
 
 class CRUDUserGroupAssociation(CRUDBase):
@@ -43,8 +44,8 @@ class CRUDUserGroupAssociation(CRUDBase):
     async def get_user_canrecive_message_status(
         self,
         group_id: int,
-        status: bool,
-        is_admin: bool,
+        can_receive_messages_status: bool,
+        rceive_newsletter_status: bool,
         session: AsyncSession,
     ) -> list[UserGroupAssociation]:
         """ "
@@ -59,8 +60,32 @@ class CRUDUserGroupAssociation(CRUDBase):
             .where(
                 and_(
                     self.model.group_id == group_id,
-                    self.model.can_receive_messages == status,
-                    self.model.is_admin == is_admin,
+                    self.model.can_receive_messages == can_receive_messages_status,
+                    self.model.rceive_newsletter == rceive_newsletter_status,
+                )
+            )
+        )
+        return user_canrecive_message.scalars().all()
+
+    async def get_user_crceive_newsletter_status(
+        self,
+        group_id: int,
+        rceive_newsletter_status: bool,
+        session: AsyncSession,
+    ) -> list[UserGroupAssociation]:
+        """ "
+        Получает ID чата, возвращает список объектов UserGroupAssociation
+        с статусом rceive_newsletter False или True
+        """
+        user_canrecive_message: UserGroupAssociation | None = await session.execute(
+            select(self.model)
+            .options(
+                selectinload(self.model.user)
+            )  # для получения связаных данных из модели user
+            .where(
+                and_(
+                    self.model.group_id == group_id,
+                    self.model.rceive_newsletter == rceive_newsletter_status,
                 )
             )
         )
@@ -95,6 +120,57 @@ class CRUDUserGroupAssociation(CRUDBase):
         )
         await session.commit()
 
+    async def update_admin_status(
+        self,
+        group_id: int,
+        user_id: int,
+        admin_status: bool,
+        session: AsyncSession,
+    ) -> None:
+        """
+        Устанавливает в поле is_atmin пользователя в True или False.
+        Аргументы:
+            group_id - id чата
+            user_id - id пользователя
+        """
+        await session.execute(
+            update(self.model)
+            .where(
+                and_(
+                    self.model.user_id == user_id,
+                    self.model.group_id == group_id,
+                )
+            )
+            .values(is_admin=admin_status)
+        )
+        await session.commit()
+
+    async def update_status_rceive_newsletter(
+        self,
+        group_id: int,
+        user_id: int,
+        status: bool,
+        session: AsyncSession,
+    ) -> None:
+        """
+        Устанавливает в поле rceive_newsletter пользователя в True или False.
+        Аргументы:
+            group_id - id чата
+            user_id - id пользователя
+            status - статус рассылки
+        """
+        await session.execute(
+            update(self.model)
+            .where(
+                and_(
+                    self.model.user_id == user_id,
+                    self.model.group_id == group_id,
+                )
+            )
+            .values(rceive_newsletter=status)
+        )
+        await session.commit()
+
     async def get_chat_where_user_admin(
         self,
         user_id: int,
@@ -119,8 +195,51 @@ class CRUDUserGroupAssociation(CRUDBase):
                 )
             )
         )
-        # print(chat_where_user_admin.scalars().all())
         return chat_where_user_admin.scalars().all()
+
+
+# Дописать добавление пользователя в базу
+# async def add_user_to_db(
+#     self,
+#     chat: types.Chat,
+#     user: types.ChatMember,
+#     session: AsyncSession,
+# ) -> None:
+#     # Из базы получаем объект группы из которой делается запрос
+#     # Если его нет, добавляем в базу
+#     group: Group | None = await session.execute(
+#         select(Group).where(Group.group_id == chat.id)
+#     )
+#     group = group.scalars().first()
+#     # Перебираем список пользователей и проверяем нет ли их в базе
+#     # Если нет добавляем
+
+#     # в объекте user_info словарь, получаем значения по ключам
+#     user = await user_crud.create(
+#         {
+#             'user_id': user.user_id,
+#             'user_name': user.username,
+#             'first_name': user.first_name,
+#             'last_name': user.last_name,
+#         },
+#         session,
+#     )
+#     # Проверяем нет ли в базе связки пользователь группа
+#     # если нет добавляем
+#     user_group_association: (
+#         UserGroupAssociation | None
+#     ) = await crud_user_group_association.get_user_from_chat(
+#         group_id=chat.id,
+#         user_id=user_info['user_id'],
+#         session=session,
+#     )
+#     if not user_group_association:
+#         is_admin: bool = user_info['is_admin_or_creator']
+#         association: UserGroupAssociation = UserGroupAssociation(
+#             user=user, group=group, is_admin=is_admin
+#         )
+#         session.add(association)
+#     await session.commit()
 
 
 crud_user_group_association = CRUDUserGroupAssociation(UserGroupAssociation)

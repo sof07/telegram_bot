@@ -16,6 +16,7 @@ class UserGroupAssociation(Base):
     group_id = Column(Integer, ForeignKey('group.group_id'), nullable=False)
     is_admin = Column(Boolean, default=False)
     can_receive_messages = Column(Boolean, default=False)
+    rceive_newsletter = Column(Boolean, default=False)
 
     user = relationship(
         'User',

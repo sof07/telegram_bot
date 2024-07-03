@@ -13,7 +13,11 @@ from app.keyboards.set_menu import main_menu
 
 from app.middlewares.middleware import DataBaseSession
 from app.logs.logger import configure_logging
-from app.sheduler.sheduler import scheduler, scheduled_task
+from app.sheduler.sheduler import (
+    scheduler,
+    scheduled_task_send_message_to_admin,
+    reset_can_receive_messages,
+)
 
 # Кнопки меню
 
@@ -30,7 +34,20 @@ async def main():
     dp.include_router(chat_member_handlers.router)
     dp.include_router(callback.router)
     dp.startup.register(main_menu)  # Регистрация меню (команда /start, /help и прочие)
-    scheduler.add_job(scheduled_task, 'cron', hour=00, minute=55, args=[bot])
+    # Нужен будет шедулер который обнулит отметки пользователям
+    scheduler.add_job(
+        reset_can_receive_messages,
+        'cron',
+        hour=16,
+        minute=44,
+    )
+    scheduler.add_job(
+        scheduled_task_send_message_to_admin,
+        'cron',
+        hour=19,
+        minute=45,
+        args=[bot],
+    )
     await dp.start_polling(bot)
 
 

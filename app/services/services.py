@@ -74,7 +74,8 @@ async def send_message_to_admin(
         for admin_id in admin_list:
             if user_list:
                 await bot.send_message(
-                    chat_id=admin_id, text=f'{text_if_user_list} {user_list}'
+                    chat_id=admin_id,
+                    text=f'{text_if_user_list} \n{'\n'.join(user_list)}',
                 )
             else:
                 await bot.send_message(
