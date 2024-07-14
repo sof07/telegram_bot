@@ -6,6 +6,8 @@ from app.crud.group import crud_group, crud_user_group_association
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import UserGroupAssociation
 from app.filters.filters import IsAdmin
+from aiogram.utils import markdown
+from aiogram.enums import ParseMode
 
 router = Router()
 
@@ -53,28 +55,28 @@ async def start_in_bot(message: types.Message, session: AsyncSession):
     )
     # Если список не пуст, получаю список чатов
     if user_chat_admin:
-        chat_list: list[list[str]] = [
-            [group.group.group_name, group.group.group_id] for group in user_chat_admin
+        faction: list[str] = [
+            'Подписаться на рассылку',
+            'Удалить из рассылки',
         ]
-        # Создаю клавиатуру
         builder = InlineKeyboardBuilder()
-        for chat in chat_list:
-            chat_name: str = chat[0]
-            chat_id: int = chat[1]
+        for action in faction:
             builder.add(
                 types.InlineKeyboardButton(
-                    text=str(chat_name),
-                    callback_data=f'chat_{chat_name}_{chat_id}',
+                    text=action,
+                    callback_data=f'faction_{action}_{user_id}',
                 )
             )
         builder.adjust(2)
-        chat_name_list: list[str] = [chat[0] for chat in chat_list]
         await message.answer(
-            f'Группы, в которых ты админ:\n{"\n".join(chat_name_list)}\n\n'
-            'Хочешь получать уведомления от бота?\n'
-            'Выбери группу и нажми "подписаться".\n\n'
-            'Уведомления тебя достали?\n'
-            'Выбери группу и нажми "отписаться".',
+            (
+                'Выбери что ты хочешь сделать:\n'
+                '👉 Подписаться на рассылку - в 19:50 бот будет присылать сообщения '
+                'о пользователях которыене отписались в чат после 17:00\n\n'
+                '👉 Удалить из рассылки - удалить пользователя из рассылки. '
+                'Бот не будет указывать выбранного пользователя в рассылке, если он не отписался '
+                'полезно когда сотрудник в чате, но работает в другом подразделении'
+            ),
             reply_markup=builder.as_markup(resize_keyboard=True),
         )
     else:

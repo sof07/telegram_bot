@@ -30,6 +30,7 @@ async def scheduled_task_send_message_to_admin(bot: Bot) -> None:
                 group_id=group.group_id,
                 can_receive_messages_status=False,
                 rceive_newsletter_status=False,
+                not_included_in_report_status=False,
                 session=session,
             )
             # Получаем список id админов

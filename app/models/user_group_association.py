@@ -12,11 +12,32 @@ class UserGroupAssociation(Base):
         ),
     )
 
-    user_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
-    group_id = Column(Integer, ForeignKey('group.group_id'), nullable=False)
-    is_admin = Column(Boolean, default=False)
-    can_receive_messages = Column(Boolean, default=False)
-    rceive_newsletter = Column(Boolean, default=False)
+    user_id = Column(
+        Integer,
+        ForeignKey('user.user_id'),
+        nullable=False,
+    )
+    group_id = Column(
+        Integer,
+        ForeignKey('group.group_id'),
+        nullable=False,
+    )
+    is_admin = Column(
+        Boolean,
+        default=False,
+    )
+    can_receive_messages = Column(
+        Boolean, default=False
+    )  # Если пользователь отметился - True
+    rceive_newsletter = Column(
+        Boolean,
+        default=False,
+    )  # Получать\не получать отчет
+    not_included_in_report = Column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )  # пользователь не попадает в отчет
 
     user = relationship(
         'User',

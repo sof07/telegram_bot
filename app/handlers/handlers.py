@@ -9,9 +9,7 @@ router = Router()
 
 
 @router.message(F.text.contains('Порядок') | F.text.contains('порядок'))
-async def message_photo_caption_please(
-    message: types.Message, session: AsyncSession
-) -> None:
+async def user_wrote_the_keyword(message: types.Message, session: AsyncSession) -> None:
     group_id: int = message.chat.id
     user_id: int = message.from_user.id
     session = session

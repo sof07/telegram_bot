@@ -46,6 +46,7 @@ class CRUDUserGroupAssociation(CRUDBase):
         group_id: int,
         can_receive_messages_status: bool,
         rceive_newsletter_status: bool,
+        not_included_in_report_status: bool,
         session: AsyncSession,
     ) -> list[UserGroupAssociation]:
         """ "
@@ -62,6 +63,7 @@ class CRUDUserGroupAssociation(CRUDBase):
                     self.model.group_id == group_id,
                     self.model.can_receive_messages == can_receive_messages_status,
                     self.model.rceive_newsletter == rceive_newsletter_status,
+                    self.model.not_included_in_report == not_included_in_report_status,
                 )
             )
         )
