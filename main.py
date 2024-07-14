@@ -34,18 +34,19 @@ async def main():
     dp.include_router(chat_member_handlers.router)
     dp.include_router(callback.router)
     dp.startup.register(main_menu)  # Регистрация меню (команда /start, /help и прочие)
-    # Нужен будет шедулер который обнулит отметки пользователям
     scheduler.add_job(
         reset_can_receive_messages,
         'cron',
-        hour=16,
-        minute=44,
+        hour=17,
+        minute=00,
+        timezone='Europe/Moscow',
     )
     scheduler.add_job(
         scheduled_task_send_message_to_admin,
         'cron',
         hour=19,
-        minute=45,
+        minute=50,
+        timezone='Europe/Moscow',
         args=[bot],
     )
     await dp.start_polling(bot)

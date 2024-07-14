@@ -5,6 +5,7 @@ from app.services.services import chat_members
 from app.crud.group import crud_group, crud_user_group_association
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import UserGroupAssociation
+from app.filters.filters import IsAdmin
 
 router = Router()
 
@@ -13,6 +14,7 @@ router = Router()
 @router.message(
     CommandStart(),
     F.chat.type.in_({'group', 'supergroup', 'channel'}),
+    IsAdmin(),
 )
 async def start_in_chat(message: types.Message, bot: Bot, session: AsyncSession):
     """

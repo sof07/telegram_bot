@@ -3,6 +3,8 @@ from pyrogram.types import ChatMember
 from aiogram import Bot
 from pyrogram import utils
 from app.core.config import settings
+from aiogram.utils import markdown
+from aiogram.enums import ParseMode
 
 
 api_id = settings.api_id
@@ -68,14 +70,15 @@ async def send_message_to_admin(
     user_list: list[str],
     bot: Bot,
 ) -> None:
-    text_if_user_list: str = 'Список засранцев:'
-    text_if_not_user_list: str = 'Сегодня все молодцы!'
+    text_if_user_list: str = markdown.bold('Список засранцев:')
+    text_if_not_user_list: str = markdown.bold('Сегодня все молодцы!')
     if admin_list:
         for admin_id in admin_list:
             if user_list:
                 await bot.send_message(
                     chat_id=admin_id,
-                    text=f'{text_if_user_list} \n{'\n'.join(user_list)}',
+                    text=f'{text_if_user_list} \n👉 {'\n👉 '.join(user_list)}',
+                    parse_mode=ParseMode.MARKDOWN_V2,
                 )
             else:
                 await bot.send_message(
