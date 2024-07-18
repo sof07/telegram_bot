@@ -1,12 +1,12 @@
-from app.models.user_group_association import UserGroupAssociation
-from app.crud.base import CRUDBase
-
-from sqlalchemy import select, and_, update
+from aiogram import types
+from sqlalchemy import and_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.models.user import User
+
+from app.crud.base import CRUDBase
 from app.models.group import Group
-from aiogram import types
+from app.models.user import User
+from app.models.user_group_association import UserGroupAssociation
 
 
 class CRUDUserGroupAssociation(CRUDBase):

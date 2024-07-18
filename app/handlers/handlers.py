@@ -1,9 +1,7 @@
-from aiogram import Router, types, F
-
-
-from app.crud.user_group_association import crud_user_group_association
+from aiogram import F, Router, types
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.crud.user_group_association import crud_user_group_association
 
 router = Router()
 

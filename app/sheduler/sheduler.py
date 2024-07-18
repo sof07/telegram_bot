@@ -1,10 +1,10 @@
+from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from app.crud import crud_user_group_association, crud_group
+
 from app.core.db import AsyncSessionLocal
+from app.crud import crud_group, crud_user_group_association
 from app.models import Group, UserGroupAssociation
 from app.services.services import send_message_to_admin
-from aiogram import Bot
-
 
 scheduler = AsyncIOScheduler()
 # Запуск планировщика для выполнения задачи каждый день в 20:00

@@ -1,11 +1,10 @@
-from pyrogram import Client
-from pyrogram.types import ChatMember
 from aiogram import Bot
-from pyrogram import utils
-from app.core.config import settings
-from aiogram.utils import markdown
 from aiogram.enums import ParseMode
+from aiogram.utils import markdown
+from pyrogram import Client, utils
+from pyrogram.types import ChatMember
 
+from app.core.config import settings
 
 api_id = settings.api_id
 api_hash = settings.api_hash

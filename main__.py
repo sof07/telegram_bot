@@ -1,11 +1,11 @@
 import asyncio
 import logging
-from aiogram import Bot, F  # F - магический фильтр
+
 from aiogram import Dispatcher  # слушает сообщения которые приходят в бот
 from aiogram import types  # подключает типы сообщений
-from aiogram.filters import CommandStart, Command
+from aiogram import Bot, F  # F - магический фильтр
+from aiogram.filters import Command, CommandStart
 from config import TELEGRAM_TOKEN
-
 
 bot = Bot(token=TELEGRAM_TOKEN)
 dp = Dispatcher()

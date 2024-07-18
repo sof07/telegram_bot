@@ -1,9 +1,9 @@
-from aiogram import Router, types, F
+from aiogram import F, Router, types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from app.crud.user_group_association import crud_user_group_association
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import UserGroupAssociation
 
+from app.crud.user_group_association import crud_user_group_association
+from app.models import UserGroupAssociation
 
 router = Router()
 
@@ -37,7 +37,7 @@ async def callbacks_faction(
             )
         builder.adjust(2)
         chat_name_list: list[str] = [chat[0] for chat in chat_list]
-        await callback.answer(
+        await callback.message.answer(
             f'Группы, в которых ты админ:\n👉 {"\n👉 ".join(chat_name_list)}\n\n'
             'Хочешь получать уведомления от бота?\n'
             'Выбери группу и нажми "подписаться".\n\n'

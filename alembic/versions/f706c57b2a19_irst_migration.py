@@ -1,18 +1,18 @@
-"""First migration
+"""irst migration
 
-Revision ID: df7ff81d548b
+Revision ID: f706c57b2a19
 Revises: 
-Create Date: 2024-07-07 23:23:25.445105
+Create Date: 2024-07-19 00:04:10.478193
 
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'df7ff81d548b'
+revision: str = 'f706c57b2a19'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -42,6 +42,7 @@ def upgrade() -> None:
     sa.Column('is_admin', sa.Boolean(), nullable=True),
     sa.Column('can_receive_messages', sa.Boolean(), nullable=True),
     sa.Column('rceive_newsletter', sa.Boolean(), nullable=True),
+    sa.Column('not_included_in_report', sa.Boolean(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['group_id'], ['group.group_id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.user_id'], ),

@@ -1,6 +1,7 @@
-from app.core.db import Base
-from sqlalchemy import Column, Integer, Boolean, ForeignKey, UniqueConstraint
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import relationship
+
+from app.core.db import Base
 
 
 class UserGroupAssociation(Base):

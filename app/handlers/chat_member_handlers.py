@@ -1,22 +1,16 @@
-from aiogram import Router, types, F
-from aiogram.filters.chat_member_updated import (
-    PROMOTED_TRANSITION,
-    KICKED,
-    LEFT,
-    RESTRICTED,
-    MEMBER,
-    ChatMemberUpdatedFilter,
-    JOIN_TRANSITION,
-    LEAVE_TRANSITION,
-    IS_ADMIN,
-)
+from aiogram import F, Router, types
+from aiogram.filters.chat_member_updated import (IS_ADMIN, JOIN_TRANSITION,
+                                                 KICKED, LEAVE_TRANSITION,
+                                                 LEFT, MEMBER,
+                                                 PROMOTED_TRANSITION,
+                                                 RESTRICTED,
+                                                 ChatMemberUpdatedFilter)
 from aiogram.types import ChatMemberUpdated
-from app.services.services import chat_members
-from app.crud.group import crud_group
-from app.crud import crud_user_group_association
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.crud import crud_user_group_association
+from app.crud.group import crud_group
+from app.services.services import chat_members
 
 router = Router()
 router.my_chat_member.filter(F.chat.type.in_({'group', 'supergroup'}))

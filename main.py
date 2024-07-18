@@ -4,20 +4,15 @@ import logging
 from aiogram import Bot, Dispatcher
 
 from app.core.config import settings
-
 from app.core.db import AsyncSessionLocal
-
-
-from app.handlers import base_handlers, handlers, chat_member_handlers, callback
+from app.handlers import (base_handlers, callback, chat_member_handlers,
+                          handlers)
 from app.keyboards.set_menu import main_menu
-
-from app.middlewares.middleware import DataBaseSession
 from app.logs.logger import configure_logging
-from app.sheduler.sheduler import (
-    scheduler,
-    scheduled_task_send_message_to_admin,
-    reset_can_receive_messages,
-)
+from app.middlewares.middleware import DataBaseSession
+from app.sheduler.sheduler import (reset_can_receive_messages,
+                                   scheduled_task_send_message_to_admin,
+                                   scheduler)
 
 # Кнопки меню
 
