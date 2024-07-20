@@ -39,8 +39,8 @@ async def main():
     scheduler.add_job(
         scheduled_task_send_message_to_admin,
         'cron',
-        hour=23,
-        minute=36,
+        hour=19,
+        minute=50,
         timezone='Europe/Moscow',
         args=[bot],
     )

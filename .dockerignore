@@ -3,3 +3,4 @@ venv
 .git
 bot.db
 .env
+management_bot.log

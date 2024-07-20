@@ -12,9 +12,8 @@ class IsAdmin(BaseFilter):
             or str(member.status) == 'ChatMemberStatus.ADMINISTRATOR'
         ):
             return True
-        else:
-            await message.bot.send_message(
-                chat_id=message.from_user.id,
-                text=f'{message.from_user.full_name} Не надо тыкать кнопку, ты не админ в группе!',
-            )
-        # Переделать. это костыль
+        # else:
+        #     await message.answer(
+        #         chat_id=message.from_user.id,
+        #         text=f'{message.from_user.full_name} Не надо тыкать кнопку, ты не админ в группе!',
+        #     )
