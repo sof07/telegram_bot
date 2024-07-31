@@ -82,7 +82,7 @@ async def start_in_bot(message: types.Message, session: AsyncSession):
         )
     else:
         await message.answer(
-            'Ты не админ ни в одной группе или не добавил бота в группу.\n'
+            '❗Ты не админ ни в одной группе или не добавил бота в группу.\n'
             'Добавь бота в группу, назначь его администратором, а потом возвращайся.'
         )
 
@@ -100,4 +100,7 @@ async def help(message: types.Message, bot: Bot, session: AsyncSession):
     :param bot: Объект бота
     :param session: Асинхронная сессия SQLAlchemy
     """
-    await message.answer('Здесь пока ничего нет, возможно скоро появится.')
+    await message.answer(
+        '❗С 17:00 до 19:50 бот отлавливает в группе сообщения с словом "порядок"\n\n'
+        '❗В 19:50 бот отправляет список людей не написавших слово "порядок" админу группы, который подписался на рассылку'
+    )

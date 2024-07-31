@@ -40,16 +40,18 @@ async def callbacks_faction(
         await callback.message.answer(
             f'Группы, в которых ты админ:\n👉 {"\n👉 ".join(chat_name_list)}\n\n'
             'Хочешь получать уведомления от бота?\n'
-            'Выбери группу и нажми "подписаться".\n\n'
+            'Выбери группу и нажми "Да".\n\n'
             'Уведомления тебя достали?\n'
-            'Выбери группу и нажми "отписаться".',
+            'Выбери группу и нажми "Нет".',
             reply_markup=builder.as_markup(resize_keyboard=True),
         )
+        await callback.answer()
     else:
         await callback.answer(
             'Пока этот функционал не реализован, если будет необходим допилим🤨',
             show_alert=True,
         )
+        await callback.answer()
 
 
 @router.callback_query(F.data.startswith('chat_'))
@@ -62,7 +64,7 @@ async def callbacks_chat(callback: types.CallbackQuery) -> None:
 
     :param callback: Объект callback-запроса Telegram.
     """
-    messages: list[str] = ['Получать', 'Не получать']
+    messages: list[str] = ['Да', 'Нет']
     chat_name: str = callback.data.split('_')[1]
     chat_id: int = callback.data.split('_')[2]
     builder = InlineKeyboardBuilder()
@@ -70,26 +72,25 @@ async def callbacks_chat(callback: types.CallbackQuery) -> None:
         builder.add(
             types.InlineKeyboardButton(
                 text=str(message),
-                callback_data=f'action_{message}_{chat_name}_{chat_id}',
+                callback_data=f'act_{message}_{chat_name}_{chat_id}',
             )
         )
     builder.adjust(2)
-    await callback.message.edit_text(
-        f'Ты хочешь получать сообщения из чата {chat_name}\n'
-        'Или отписаться от получения сообщений?',
+    await callback.message.answer(
+        f'Ты хочешь получать сообщения из чата {chat_name}?',
         reply_markup=builder.as_markup(resize_keyboard=True),
     )
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith('action_'))
+@router.callback_query(F.data.startswith('act_'))
 async def callbacks_action_with_chat(
     callback: types.CallbackQuery, session: AsyncSession
 ) -> None:
     action: str = callback.data.split('_')[1]  # Получать, не получать
     chat_name: str = callback.data.split('_')[2]
     chat_id: int = callback.data.split('_')[3]
-    if action == 'Получать':
+    if action == 'Да':
         await crud_user_group_association.update_status_rceive_newsletter(
             user_id=callback.from_user.id,
             group_id=chat_id,
@@ -100,7 +101,7 @@ async def callbacks_action_with_chat(
             text=f'Ты подписался на рассылку из чата {chat_name}',
             show_alert=True,
         )
-    if action == 'Не получать':
+    if action == 'Нет':
         await crud_user_group_association.update_status_rceive_newsletter(
             user_id=callback.from_user.id,
             group_id=chat_id,
