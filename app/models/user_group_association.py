@@ -27,18 +27,19 @@ class UserGroupAssociation(Base):
         Boolean,
         default=False,
     )
-    can_receive_messages = Column(
-        Boolean, default=False
-    )  # Если пользователь отметился - True
+    # Если пользователь отметился - True
+    can_receive_messages = Column(Boolean, default=False)
+    # Получать\не получать отчет
     rceive_newsletter = Column(
         Boolean,
         default=False,
-    )  # Получать\не получать отчет
+    )
+    # пользователь не попадает в отчет
     not_included_in_report = Column(
         Boolean,
         default=False,
         nullable=False,
-    )  # пользователь не попадает в отчет
+    )
 
     user = relationship(
         'User',

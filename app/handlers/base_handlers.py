@@ -1,7 +1,5 @@
 from aiogram import Bot, F, Router, types
-from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
-from aiogram.utils import markdown
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 

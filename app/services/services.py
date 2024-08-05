@@ -1,8 +1,8 @@
 from aiogram import Bot
-from aiogram.enums import ParseMode
-from aiogram.utils import markdown
 from pyrogram import Client, utils
 from pyrogram.types import ChatMember
+from aiogram.utils.markdown import bold
+from aiogram.enums.parse_mode import ParseMode
 
 from app.core.config import settings
 
@@ -64,22 +64,32 @@ async def chat_members(chat_id: int) -> list[dict]:
     return user_data
 
 
+# Экранирует символы в тексте
+def escape_markdown(text: str) -> str:
+    escape_chars = r'\_*[]()~`>#+-=|{}.!'
+    return ''.join(f'\\{char}' if char in escape_chars else char for char in text)
+
+
 async def send_message_to_admin(
     admin_list: list[int],
     user_list: list[str],
     bot: Bot,
 ) -> None:
-    text_if_user_list: str = markdown.bold('Список засранцев:')
-    text_if_not_user_list: str = markdown.bold('Сегодня все молодцы!')
+    text_if_user_list: str = bold(escape_markdown('Возможно эти ребята косячат:'))
+    text_if_not_user_list: str = bold(escape_markdown('Сегодня все молодцы!'))
+
     if admin_list:
         for admin_id in admin_list:
             if user_list:
+                escaped_user_list = [escape_markdown(user) for user in user_list]
                 await bot.send_message(
                     chat_id=admin_id,
-                    text=f'{text_if_user_list} \n👉 {'\n👉 '.join(user_list)}',
+                    text=f'{text_if_user_list} \n👉 {'\n👉 '.join(escaped_user_list)}',
                     parse_mode=ParseMode.MARKDOWN_V2,
                 )
             else:
                 await bot.send_message(
-                    chat_id=admin_id, text=f'{text_if_not_user_list}'
+                    chat_id=admin_id,
+                    text=text_if_not_user_list,
+                    parse_mode=ParseMode.MARKDOWN_V2,
                 )

@@ -41,7 +41,7 @@ async def main():
         scheduled_task_send_message_to_admin,
         'cron',
         hour=19,
-        minute=50,
+        minute=45,
         timezone='Europe/Moscow',
         args=[bot],
     )
