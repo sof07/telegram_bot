@@ -10,6 +10,7 @@ class Group(Base):
     users = relationship(
         'UserGroupAssociation',
         back_populates='group',
+        cascade='all, delete-orphan',  # Каскадное удаление связей при удалении группы
     )
 
     def __repr__(self):
