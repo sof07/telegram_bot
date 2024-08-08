@@ -11,17 +11,17 @@ router = Router()
 def truncate_string_to_byte_length(input_string: str, max_byte_length: int = 64) -> str:
     """
     Обрезает строку до указанной максимальной длины в байтах, если это необходимо.
-
     Параметры:
     input_string (str): Строка, которую нужно проверить и обрезать.
     max_byte_length (int): Максимальная допустимая длина строки в байтах.
-
     Возвращает:
     str: Обрезанная строка, если она превышает заданную длину в байтах.
     """
-    while len(input_string.encode('utf-8')) > max_byte_length:
-        input_string = input_string[:max_byte_length]
-        max_byte_length -= 1
+
+    max_byte = max_byte_length
+    while len(input_string.encode('utf-8')) >= max_byte_length:
+        input_string = input_string[:max_byte]
+        max_byte -= 1
     return input_string
 
 
@@ -46,7 +46,7 @@ async def callbacks_faction(
         for chat in chat_list:
             chat_name: str = chat[0]
             chat_id: int = chat[1]
-            call_back_text: str = f'chat_{chat_name}_{chat_id}'
+            call_back_text: str = f'chat_{chat_id}_{chat_name}'
             builder.add(
                 types.InlineKeyboardButton(
                     text=str(chat_name),
@@ -83,8 +83,8 @@ async def callbacks_chat(callback: types.CallbackQuery) -> None:
     :param callback: Объект callback-запроса Telegram.
     """
     messages: list[str] = ['Да', 'Нет']
-    chat_name: str = callback.data.split('_')[1]
-    chat_id: int = callback.data.split('_')[2]
+    chat_name: str = callback.data.split('_')[2]
+    chat_id: int = callback.data.split('_')[1]
     builder = InlineKeyboardBuilder()
     for message in messages:
         call_back_text = f'act_{message}_{chat_id}_{chat_name}'

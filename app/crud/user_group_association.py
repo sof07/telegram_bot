@@ -201,49 +201,15 @@ class CRUDUserGroupAssociation(CRUDBase):
         )
         return chat_where_user_admin.scalars().all()
 
-
-# Дописать добавление пользователя в базу
-# async def add_user_to_db(
-#     self,
-#     chat: types.Chat,
-#     user: types.ChatMember,
-#     session: AsyncSession,
-# ) -> None:
-#     # Из базы получаем объект группы из которой делается запрос
-#     # Если его нет, добавляем в базу
-#     group: Group | None = await session.execute(
-#         select(Group).where(Group.group_id == chat.id)
-#     )
-#     group = group.scalars().first()
-#     # Перебираем список пользователей и проверяем нет ли их в базе
-#     # Если нет добавляем
-
-#     # в объекте user_info словарь, получаем значения по ключам
-#     user = await user_crud.create(
-#         {
-#             'user_id': user.user_id,
-#             'user_name': user.username,
-#             'first_name': user.first_name,
-#             'last_name': user.last_name,
-#         },
-#         session,
-#     )
-#     # Проверяем нет ли в базе связки пользователь группа
-#     # если нет добавляем
-#     user_group_association: (
-#         UserGroupAssociation | None
-#     ) = await crud_user_group_association.get_user_from_chat(
-#         group_id=chat.id,
-#         user_id=user_info['user_id'],
-#         session=session,
-#     )
-#     if not user_group_association:
-#         is_admin: bool = user_info['is_admin_or_creator']
-#         association: UserGroupAssociation = UserGroupAssociation(
-#             user=user, group=group, is_admin=is_admin
-#         )
-#         session.add(association)
-#     await session.commit()
+    async def get_chat_where_user_id(
+        self,
+        user_id: int,
+        session: AsyncSession,
+    ) -> UserGroupAssociation | None:
+        chat_where_user_id = await session.execute(
+            select(self.model).where(self.model.user_id == user_id)
+        )
+        return chat_where_user_id.scalars().all()
 
 
 crud_user_group_association = CRUDUserGroupAssociation(UserGroupAssociation)

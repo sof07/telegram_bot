@@ -34,10 +34,10 @@ class CRUDGroup(CRUDBase):
         # Перебираем список пользователей и проверяем нет ли их в базе
         # Если нет добавляем
         for user_info in user_data:
-            user: User | None = await session.execute(
-                select(User).where(User.user_id == user_info['user_id'])
+            user: User | None = await user_crud.get_user(
+                user_id=user_info['user_id'],
+                session=session,
             )
-            user = user.scalars().first()
             if not user:
                 # в объекте user_info словарь, получаем значения по ключам
                 user = await user_crud.create(
