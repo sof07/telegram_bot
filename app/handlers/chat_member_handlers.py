@@ -8,6 +8,7 @@ from aiogram.filters.chat_member_updated import (
     MEMBER,
     PROMOTED_TRANSITION,
     RESTRICTED,
+    IS_NOT_MEMBER,
     ChatMemberUpdatedFilter,
 )
 from aiogram.types import ChatMemberUpdated
@@ -41,6 +42,30 @@ async def add_group_to_database(
     # Записывает пользователей в базу данных связывая их с группой
     await crud_group.add_chat_members_to_db(
         chat=chat, user_data=user_data, session=session
+    )
+
+
+@router.my_chat_member(ChatMemberUpdatedFilter(member_status_changed=IS_NOT_MEMBER))
+async def kicked_bot_from_group(
+    event: ChatMemberUpdated,
+    session: AsyncSession,
+) -> None:
+    """
+    Обрабатывает событие пудаления бота из чата.
+
+    :param event: Объект события обновления участника чата.
+    :param session: Асинхронная сессия SQLAlchemy.
+    """
+    chat: types.Chat = event.chat  # Объект чата из которого отправлена команда start
+    # Функция возвращает список пользователей из чата
+    group_data = await crud_group.get_group(
+        group_id=chat.id,
+        session=session,
+    )
+    # Записывает пользователей в базу данных связывая их с группой
+    await crud_group.remove(
+        db_obj=group_data,
+        session=session,
     )
 
 

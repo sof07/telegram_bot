@@ -11,6 +11,16 @@ from app.models.user_group_association import UserGroupAssociation
 
 
 class CRUDGroup(CRUDBase):
+    async def get_group(
+        self,
+        group_id: int,
+        session: AsyncSession,
+    ) -> None | Group:
+        group_obj = await session.execute(
+            select(self.model).where(self.model.group_id == group_id)
+        )
+        return group_obj.scalars().first()
+
     async def add_chat_members_to_db(
         self,
         chat: types.Chat,
