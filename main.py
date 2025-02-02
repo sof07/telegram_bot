@@ -2,6 +2,8 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from fastapi import FastAPI
+
 
 from app.core.config import settings
 from app.core.db import AsyncSessionLocal
@@ -14,8 +16,21 @@ from app.sheduler.sheduler import (
     scheduled_task_send_message_to_admin,
     scheduler,
 )
+from sqladmin import Admin
+from app.core.db import engine
+from app.admin.admin import UserAdmin, GroupAdmin, UserGroupAssociationAdmin
+
+
+app = FastAPI()
+admin = Admin(app, engine)
+
 
 # Кнопки меню
+
+
+admin.add_view(UserAdmin)
+admin.add_view(GroupAdmin)
+admin.add_view(UserGroupAssociationAdmin)
 
 
 async def main():

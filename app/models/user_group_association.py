@@ -52,4 +52,4 @@ class UserGroupAssociation(Base):
 
     def __repr__(self):
         # При вывде объекта на печать. возвращает человекочитаемый текст о нем
-        return f'Пользователь с id {self.user_id}, в группе с id {self.group_id}, admin: {self.is_admin}'
+        return f'Пользователь с id {self.user_id}'

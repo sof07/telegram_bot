@@ -15,4 +15,4 @@ class Group(Base):
 
     def __repr__(self):
         # При вывде объекта на печать. возвращает человекочитаемый текст о нем
-        return f'Название группы: {self.group_name}, id группы: {self.group_id}'
+        return self.group_name
