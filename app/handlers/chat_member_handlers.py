@@ -51,7 +51,7 @@ async def kicked_bot_from_group(
     session: AsyncSession,
 ) -> None:
     """
-    Обрабатывает событие пудаления бота из чата.
+    Обрабатывает событие удаления бота из чата.
 
     :param event: Объект события обновления участника чата.
     :param session: Асинхронная сессия SQLAlchemy.

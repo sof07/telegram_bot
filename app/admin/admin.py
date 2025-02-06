@@ -9,8 +9,10 @@ from sqladmin.authentication import AuthenticationBackend
 
 from app.core.db import AsyncSessionLocal
 from app.crud.user import user_crud
-from app.crud import crud_user_group_association
-from sqlalchemy.sql.expression import Select, select
+from sqlalchemy.sql import select
+
+
+from sqlalchemy.orm import aliased
 
 
 class AdminAuth(AuthenticationBackend):
@@ -126,7 +128,7 @@ class UserAdmin(ModelView, model=User):
         User.first_name: 'Имя',
         User.last_name: 'Фамилия',
         User.date_of_birth: 'Дата рождения',
-        User.first_name_last_name: 'Имя для заполнения в ручную',
+        User.first_name_last_name: 'Здесь можно поменять имя пользователю',
         User.groups: 'Группа',
     }
     form_edit_rules = [
@@ -151,6 +153,36 @@ class UserAdmin(ModelView, model=User):
     can_view_details = False
     page_size = 100
 
+    def list_query(self, request):
+        """
+        Вернет SQLAlchemy select выражение для списка групп,
+        куда текущий пользователь имеет доступ как администратор.
+        """
+
+        token = request.session.get('token')
+        user_id = token.split('.')[0].replace(
+            '"', ''
+        )  # ID пользователя который вошел в админку
+        user_group_alias = aliased(UserGroupAssociation)
+
+        # Подзапрос: выбираем группы, где текущий пользователь является админом
+        admin_groups_subquery = (
+            select(user_group_alias.group_id)
+            .where(
+                user_group_alias.user_id == user_id, user_group_alias.is_admin.is_(True)
+            )
+            .subquery()
+        )
+
+        # Запрос: выбираем всех пользователей, состоящих в этих группах
+        query = (
+            select(User)
+            .join(User.groups)  # Связь через отношение `groups` в модели User
+            .where(UserGroupAssociation.group_id.in_(admin_groups_subquery))
+        )
+
+        return query
+
 
 class GroupAdmin(ModelView, model=Group):
     column_list = [Group.group_name]
@@ -164,21 +196,6 @@ class GroupAdmin(ModelView, model=Group):
     can_edit = True
     can_delete = False
     can_view_details = False
-
-    # def list_query(self, request):
-    #     """
-    #     Вернет SQLAlchemy select выражение для списка групп,
-    #     куда текущий пользователь имеет доступ как администратор.
-    #     """
-
-    #     print(f'>>>>>>>>>{request.user}')
-    #     return select(self.model)
-
-    # #     # async with AsyncSessionLocal() as session:
-    # #     #     # Используем select и join для получения группы пользователя
-    # #     #     return await crud_user_group_association.get_chat_where_user_admin(
-    # #     #         request.user_id, session
-    # #     #     )
 
 
 class UserGroupAssociationAdmin(ModelView, model=UserGroupAssociation):
@@ -227,3 +244,29 @@ class UserGroupAssociationAdmin(ModelView, model=UserGroupAssociation):
     can_delete = False
     can_view_details = False
     page_size = 100
+
+    def list_query(self, request):
+        """
+        Вернет SQLAlchemy select выражение для списка групп,
+        куда текущий пользователь имеет доступ как администратор.
+        """
+
+        token = request.session.get('token')
+        user_id = token.split('.')[0].replace(
+            '"', ''
+        )  # ID пользователя который вошел в админку
+        user_group_alias = aliased(self.model)
+
+        # Выбираем группы, где текущий пользователь является админом
+        admin_groups_subquery = (
+            select(user_group_alias.group_id)
+            .where(
+                user_group_alias.user_id == user_id, user_group_alias.is_admin.is_(True)
+            )
+            .subquery()
+        )
+
+        # Выбираем пользователей из этих групп
+        query = select(self.model).where(self.model.group_id.in_(admin_groups_subquery))
+
+        return query

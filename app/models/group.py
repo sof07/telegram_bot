@@ -11,6 +11,7 @@ class Group(Base):
         'UserGroupAssociation',
         back_populates='group',
         cascade='all, delete-orphan',  # Каскадное удаление связей при удалении группы
+        lazy='selectin',
     )
 
     def __repr__(self):

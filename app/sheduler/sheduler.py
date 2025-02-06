@@ -25,9 +25,13 @@ def get_user_names(user_list: list[UserGroupAssociation]) -> list[str] | None:
     """
     return (
         [
-            f'{user.user.first_name} {user.user.last_name}'
-            if user.user.last_name != 'Unknown'
-            else user.user.first_name
+            user.user.first_name_last_name
+            if user.user.first_name_last_name
+            else (
+                f'{user.user.first_name} {user.user.last_name}'
+                if user.user.last_name != 'Unknown'
+                else user.user.first_name
+            )
             for user in user_list
         ]
         if user_list

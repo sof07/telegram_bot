@@ -54,8 +54,8 @@ async def main():
     scheduler.add_job(
         reset_can_receive_messages,
         'cron',
-        hour=17,
-        minute=00,
+        hour=16,
+        minute=40,
         timezone='Europe/Moscow',
     )
     scheduler.add_job(
