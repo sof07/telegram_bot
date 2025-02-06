@@ -18,12 +18,18 @@ from app.sheduler.sheduler import (
 )
 from sqladmin import Admin
 from app.core.db import engine
-from app.admin.admin import UserAdmin, GroupAdmin, UserGroupAssociationAdmin
+from app.admin.admin import UserAdmin, GroupAdmin, UserGroupAssociationAdmin, AdminAuth
 
 
 app = FastAPI()
-admin = Admin(app, engine)
 
+authentication_backend = AdminAuth(secret_key=settings.secret_key)
+
+admin = Admin(
+    app=app,
+    engine=engine,
+    authentication_backend=authentication_backend,
+)
 
 # Кнопки меню
 

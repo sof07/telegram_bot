@@ -1,5 +1,6 @@
 # app/crud/base.py
 
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,6 +23,16 @@ class CRUDBase:
         db_objs = await session.execute(select(self.model))
         return db_objs.scalars().all()
 
+    async def get_by_attribute(
+        self,
+        attr_name: str,
+        attr_value: str,
+        session: AsyncSession,
+    ):
+        attr = getattr(self.model, attr_name)
+        db_obj = await session.execute(select(self.model).where(attr == attr_value))
+        return db_obj.scalars().first()
+
     async def create(
         self,
         obj_in,
@@ -39,11 +50,9 @@ class CRUDBase:
         obj_in,
         session: AsyncSession,
     ):
-        update_data = obj_in.dict(exclude_unset=True)
+        for field, value in obj_in.items():
+            setattr(db_obj, field, value)
 
-        for field in db_obj:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
         session.add(db_obj)
         await session.commit()
         await session.refresh(db_obj)

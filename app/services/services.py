@@ -3,6 +3,8 @@ from pyrogram import Client, utils
 from pyrogram.types import ChatMember
 from aiogram.utils.markdown import bold
 from aiogram.enums.parse_mode import ParseMode
+import random
+import string
 
 from app.core.config import settings
 
@@ -84,7 +86,7 @@ async def send_message_to_admin(
                 escaped_user_list = [escape_markdown(user) for user in user_list]
                 await bot.send_message(
                     chat_id=admin_id,
-                    text=f'{text_if_user_list} \n👉 {'\n👉 '.join(escaped_user_list)}',
+                    text=f'{text_if_user_list} \n👉 {"\n👉 ".join(escaped_user_list)}',
                     parse_mode=ParseMode.MARKDOWN_V2,
                 )
             else:
@@ -93,3 +95,8 @@ async def send_message_to_admin(
                     text=text_if_not_user_list,
                     parse_mode=ParseMode.MARKDOWN_V2,
                 )
+
+
+def random_alphanumeric_string(length):
+    """Генератор пароля"""
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))

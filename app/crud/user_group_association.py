@@ -7,6 +7,7 @@ from app.crud.base import CRUDBase
 from app.models.group import Group
 from app.models.user import User
 from app.models.user_group_association import UserGroupAssociation
+import logging
 
 
 class CRUDUserGroupAssociation(CRUDBase):
@@ -132,7 +133,7 @@ class CRUDUserGroupAssociation(CRUDBase):
         session: AsyncSession,
     ) -> None:
         """
-        Устанавливает в поле is_atmin пользователя в True или False.
+        Устанавливает в поле is_admin пользователя в True или False.
         Аргументы:
             group_id - id чата
             user_id - id пользователя
@@ -187,19 +188,24 @@ class CRUDUserGroupAssociation(CRUDBase):
         Возвращает:
             chat: Group | None
         """
-        chat_where_user_admin: UserGroupAssociation | None = await session.execute(
-            select(self.model)
-            .options(
-                selectinload(self.model.group)
-            )  # для получения связаных данных из модели user
-            .where(
-                and_(
-                    self.model.user_id == user_id,
-                    self.model.is_admin,
+        try:
+            chat_where_user_admin: UserGroupAssociation | None = await session.execute(
+                select(self.model)
+                .options(
+                    selectinload(self.model.group)
+                )  # для получения связаных данных из модели user
+                .where(
+                    and_(
+                        self.model.user_id == user_id,
+                        self.model.is_admin,
+                    )
                 )
             )
-        )
-        return chat_where_user_admin.scalars().all()
+            return chat_where_user_admin.unique().scalars().all()
+        except Exception as e:
+            # Записываем исключение в логи для дальнейшего анализа
+            logging.error(f'Ошибка: {e}')
+            return None
 
     async def get_chat_where_user_id(
         self,

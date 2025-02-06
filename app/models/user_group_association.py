@@ -44,12 +44,14 @@ class UserGroupAssociation(Base):
     user = relationship(
         'User',
         back_populates='groups',
+        lazy='selectin',
     )
     group = relationship(
         'Group',
         back_populates='users',
+        lazy='selectin',
     )
 
     def __repr__(self):
         # При вывде объекта на печать. возвращает человекочитаемый текст о нем
-        return f'Пользователь с id {self.user_id}'
+        return self.group.group_name

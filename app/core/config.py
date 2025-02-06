@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     database_url: str = 'DATABASE_URL'
     api_hash: str = 'API_HASH'
     api_id: int = 'API_ID'
+    secret_key: str = 'SECRET_KEY'
 
     class Config:
         env_file = '.env'

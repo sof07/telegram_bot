@@ -2,11 +2,14 @@ from aiogram import Bot, F, Router, types
 from aiogram.filters import Command, CommandStart
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
+import bcrypt
 
-from app.crud.group import crud_group, crud_user_group_association
+from app.crud import crud_group, crud_user_group_association, user_crud
 from app.filters.filters import IsAdmin
-from app.models import UserGroupAssociation
+from app.models import UserGroupAssociation, User
 from app.services.services import chat_members
+from app.services.services import random_alphanumeric_string
+import logging
 
 router = Router()
 
@@ -45,12 +48,11 @@ async def start_in_bot(message: types.Message, session: AsyncSession):
     :param message: Объект сообщения
     :param session: Асинхронная сессия SQLAlchemy
     """
-    user_id: int = message.from_user.id
     # Список объектов класса UserGroupAssociation, где пользователь админ
     user_chat_admin: list[
         UserGroupAssociation
     ] = await crud_user_group_association.get_chat_where_user_admin(
-        user_id=user_id, session=session
+        user_id=message.from_user.id, session=session
     )
     # Если список не пуст, получаю список чатов
     if user_chat_admin:
@@ -63,7 +65,7 @@ async def start_in_bot(message: types.Message, session: AsyncSession):
             builder.add(
                 types.InlineKeyboardButton(
                     text=action,
-                    callback_data=f'faction_{action}_{user_id}',
+                    callback_data=f'faction_{action}_{message.from_user.id}',
                 )
             )
         builder.adjust(2)
@@ -83,6 +85,40 @@ async def start_in_bot(message: types.Message, session: AsyncSession):
             '❗Ты не админ ни в одной группе или не добавил бота в группу.\n'
             'Добавь бота в группу, назначь его администратором, а потом возвращайся.'
         )
+
+
+@router.message(
+    Command('admin'),
+    F.chat.type.in_({'private'}),
+)
+async def access_to_the_admin_panel(message: types.Message, session: AsyncSession):
+    try:
+        user_chat_admin: list[
+            UserGroupAssociation
+        ] = await crud_user_group_association.get_chat_where_user_admin(
+            user_id=message.from_user.id, session=session
+        )
+        if user_chat_admin:
+            user: User = await user_crud.get_user(
+                user_id=message.from_user.id, session=session
+            )
+            password: str = random_alphanumeric_string(5)
+            hash_password: str = bcrypt.hashpw(
+                password.encode('utf-8'), bcrypt.gensalt()
+            ).decode('utf-8')
+
+            await user_crud.update(
+                db_obj=user, obj_in={'password': hash_password}, session=session
+            )
+            await message.answer(
+                f'Твой логин: {message.from_user.id}\n Пароль: {password}\n Ссылка на админку:'
+            )
+        await message.answer(
+            '❗Ты не админ ни в одной группе или не добавил бота в группу.\n'
+            'Добавь бота в группу, назначь его администратором, а потом возвращайся.'
+        )
+    except Exception as e:
+        logging.error(e)
 
 
 # Обрабатывает команду /help, если она отправлена в приватном чате

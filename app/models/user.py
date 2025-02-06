@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.types import Date
 from sqlalchemy.orm import relationship
-from datetime import datetime
+
 
 from app.core.db import Base
 
@@ -16,12 +16,14 @@ class User(Base):
         nullable=True,
     )
     date_of_birth = Column(Date, nullable=True, default=None)
+    password = Column(String(100), nullable=True, default='')
     groups = relationship(
         'UserGroupAssociation',
         back_populates='user',
-        cascade='all, delete-orphan',  # Каскадное удаление связей при удалении пользователя
+        cascade='all, delete-orphan',
+        lazy='selectin',  # Каскадное удаление связей при удалении пользователя
     )
 
     def __repr__(self):
         # При вывде объекта на печать. возвращает человекочитаемый текст о нем
-        return self.user_name
+        return self.first_name
