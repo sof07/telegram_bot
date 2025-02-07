@@ -25,5 +25,7 @@ class User(Base):
     )
 
     def __repr__(self):
+        if self.first_name_last_name:
+            return self.first_name_last_name
         # При вывде объекта на печать. возвращает человекочитаемый текст о нем
         return self.first_name

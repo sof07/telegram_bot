@@ -214,10 +214,10 @@ class UserGroupAssociationAdmin(ModelView, model=UserGroupAssociation):
     column_labels = {
         UserGroupAssociation.user: 'Пользователь',
         UserGroupAssociation.group: 'Группа',
-        UserGroupAssociation.is_admin: 'Администратор',
+        UserGroupAssociation.is_admin: 'Является админом в группе',
         UserGroupAssociation.can_receive_messages: 'Пользователь отметился',
         UserGroupAssociation.rceive_newsletter: 'Получать отчет от бота',
-        UserGroupAssociation.not_included_in_report: 'Исключить пользователя из отчета',
+        UserGroupAssociation.not_included_in_report: 'Не учитывать в отчете',
     }
     column_sortable_list = [
         UserGroupAssociation.user,
