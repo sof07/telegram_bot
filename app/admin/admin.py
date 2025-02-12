@@ -1,18 +1,15 @@
-from app.models import User, Group, UserGroupAssociation
-from sqladmin import ModelView
-
 import bcrypt
 from fastapi.requests import Request
 from itsdangerous.exc import BadSignature
 from itsdangerous.serializer import Serializer
+from sqladmin import ModelView
 from sqladmin.authentication import AuthenticationBackend
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql import select
 
 from app.core.db import AsyncSessionLocal
 from app.crud.user import user_crud
-from sqlalchemy.sql import select
-
-
-from sqlalchemy.orm import aliased
+from app.models import Group, User, UserGroupAssociation
 
 
 class AdminAuth(AuthenticationBackend):
@@ -194,7 +191,7 @@ class GroupAdmin(ModelView, model=Group):
     ]
     can_create = False
     can_edit = True
-    can_delete = False
+    can_delete = True
     can_view_details = False
 
 
@@ -241,7 +238,7 @@ class UserGroupAssociationAdmin(ModelView, model=UserGroupAssociation):
 
     can_create = False
     can_edit = True
-    can_delete = False
+    can_delete = True
     can_view_details = False
     page_size = 100
 

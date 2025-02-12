@@ -1,26 +1,39 @@
 from aiogram import F, Router, types
-from aiogram.filters.chat_member_updated import (
-    IS_ADMIN,
-    JOIN_TRANSITION,
-    KICKED,
-    LEAVE_TRANSITION,
-    LEFT,
-    MEMBER,
-    PROMOTED_TRANSITION,
-    RESTRICTED,
-    IS_NOT_MEMBER,
-    ChatMemberUpdatedFilter,
-)
+from aiogram.filters.chat_member_updated import (IS_ADMIN, IS_NOT_MEMBER,
+                                                 JOIN_TRANSITION, KICKED,
+                                                 LEAVE_TRANSITION, LEFT,
+                                                 MEMBER, PROMOTED_TRANSITION,
+                                                 RESTRICTED,
+                                                 ChatMemberUpdatedFilter)
 from aiogram.types import ChatMemberUpdated
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud import crud_user_group_association, crud_group, user_crud
-from app.services.services import chat_members
+from app.crud import crud_group, crud_user_group_association, user_crud
 from app.models import UserGroupAssociation
-
+from app.services.services import chat_members
 
 router = Router()
 router.my_chat_member.filter(F.chat.type.in_({'group', 'supergroup'}))
+
+
+async def update_admin_status(
+    event: ChatMemberUpdated, session: AsyncSession, status: bool
+) -> None:
+    """
+    Универсальная функция обновления статуса администратора пользователя.
+
+    :param event: Объект обновления статуса чата.
+    :param session: Асинхронная сессия для работы с базой данных.
+    :param status: Новый статус администратора (True - назначен, False - снят).
+    """
+    chat_id: types.Chat = event.chat.id
+    user_id: int = event.new_chat_member.user.id
+    await crud_user_group_association.update_admin_status(
+        group_id=chat_id,
+        user_id=user_id,
+        admin_status=status,
+        session=session,
+    )
 
 
 # my_chat_member отлавливает события связанные с ботом
@@ -31,11 +44,12 @@ async def add_group_to_database(
     event: ChatMemberUpdated, session: AsyncSession
 ) -> None:
     """
-    Обрабатывает событие повышения статуса бота до администратора и добавляет группу в базу данных.
+    Добавляет группу и ее участников в базу данных после повышения бота в админы.
 
-    :param event: Объект события обновления участника чата.
-    :param session: Асинхронная сессия SQLAlchemy.
+    :param event: Объект обновления статуса чата.
+    :param session: Асинхронная сессия для работы с базой данных.
     """
+
     chat: types.Chat = event.chat  # Объект чата из которого отправлена команда start
     # Функция возвращает список пользователей из чата
     user_data = await chat_members(chat.id)
@@ -51,10 +65,10 @@ async def kicked_bot_from_group(
     session: AsyncSession,
 ) -> None:
     """
-    Обрабатывает событие удаления бота из чата.
+    Удаляет группу из базы данных после исключения бота.
 
-    :param event: Объект события обновления участника чата.
-    :param session: Асинхронная сессия SQLAlchemy.
+    :param event: Объект обновления статуса чата.
+    :param session: Асинхронная сессия для работы с базой данных.
     """
     chat: types.Chat = event.chat  # Объект чата из которого отправлена команда start
     # Функция возвращает список пользователей из чата
@@ -77,19 +91,12 @@ async def kicked_bot_from_group(
 )
 async def admin_true(event: ChatMemberUpdated, session: AsyncSession) -> None:
     """
-    Обрабатывает событие повышения пользователя до администратора.
+    Обновляет статус пользователя, если он стал администратором в группе.
 
-    :param event: Объект события обновления участника чата.
-    :param session: Асинхронная сессия SQLAlchemy.
+    :param event: Объект обновления статуса чата.
+    :param session: Асинхронная сессия для работы с базой данных.
     """
-    chat_id: types.Chat = event.chat.id
-    user_id: int = event.new_chat_member.user.id
-    await crud_user_group_association.update_admin_status(
-        group_id=chat_id,
-        user_id=user_id,
-        admin_status=True,
-        session=session,
-    )
+    await update_admin_status(event, session, True)
 
 
 @router.chat_member(
@@ -99,23 +106,22 @@ async def admin_true(event: ChatMemberUpdated, session: AsyncSession) -> None:
 )
 async def admin_false(event: ChatMemberUpdated, session: AsyncSession) -> None:
     """
-    Обрабатывает событие понижения пользователя с администратора.
+    Обновляет статус пользователя, если он больше не является администратором.
 
-    :param event: Объект события обновления участника чата.
-    :param session: Асинхронная сессия SQLAlchemy.
+    :param event: Объект обновления статуса чата.
+    :param session: Асинхронная сессия для работы с базой данных.
     """
-    chat_id: types.Chat = event.chat.id
-    user_id: int = event.new_chat_member.user.id
-    await crud_user_group_association.update_admin_status(
-        group_id=chat_id,
-        user_id=user_id,
-        admin_status=False,
-        session=session,
-    )
+    await update_admin_status(event, session, False)
 
 
 @router.chat_member(ChatMemberUpdatedFilter(member_status_changed=LEAVE_TRANSITION))
 async def user_leave(event: ChatMemberUpdated, session: AsyncSession) -> None:
+    """
+    Обрабатывает выход пользователя из группы и обновляет базу данных.
+
+    :param event: Объект обновления статуса чата.
+    :param session: Асинхронная сессия для работы с базой данных.
+    """
     chat_id: types.Chat = event.chat.id
     user_id: int = event.new_chat_member.user.id
     user_group_association: UserGroupAssociation = (
@@ -140,6 +146,12 @@ async def user_leave(event: ChatMemberUpdated, session: AsyncSession) -> None:
 
 @router.chat_member(ChatMemberUpdatedFilter(member_status_changed=JOIN_TRANSITION))
 async def user_join(event: ChatMemberUpdated, session: AsyncSession) -> None:
+    """
+    Добавляет нового пользователя в базу данных после его вступления в группу.
+
+    :param event: Объект обновления статуса чата.
+    :param session: Асинхронная сессия для работы с базой данных.
+    """
     chat: types.Chat = event.chat
     user_id: int = event.new_chat_member.user.id
     user_name: str = event.new_chat_member.user.username

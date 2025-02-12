@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     api_hash: str = 'API_HASH'
     api_id: int = 'API_ID'
     secret_key: str = 'SECRET_KEY'
+    admin_url: str = 'http://tgbot.sotikhome.keenetic.link/admin/'
 
     class Config:
         env_file = '.env'

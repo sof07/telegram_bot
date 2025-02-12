@@ -1,14 +1,12 @@
 from aiogram import Bot
-from aiogram.types import (
-    BotCommand,
-    BotCommandScopeAllPrivateChats,
-    BotCommandScopeDefault,
-    BotCommandScopeAllGroupChats,
-)
+from aiogram.types import (BotCommand, BotCommandScopeAllGroupChats,
+                           BotCommandScopeAllPrivateChats,
+                           BotCommandScopeDefault)
 
 MENU_BUTTONS_TEXT: dict[str, str] = {
     '/start': 'Запуск бота, доступна только админам',
     '/help': 'Справка по работе бота',
+    '/admin': 'Войти в админ панель бота',
 }
 
 

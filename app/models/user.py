@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.types import Date
 from sqlalchemy.orm import relationship
-
+from sqlalchemy.types import Date
 
 from app.core.db import Base
 

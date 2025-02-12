@@ -1,13 +1,11 @@
-from aiogram import types
+import logging
+
 from sqlalchemy import and_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.crud.base import CRUDBase
-from app.models.group import Group
-from app.models.user import User
 from app.models.user_group_association import UserGroupAssociation
-import logging
 
 
 class CRUDUserGroupAssociation(CRUDBase):

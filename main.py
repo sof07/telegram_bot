@@ -1,12 +1,14 @@
 import asyncio
 import logging
 
+import uvicorn
 from aiogram import Bot, Dispatcher
 from fastapi import FastAPI
+from sqladmin import Admin
 
-
+from app.admin.admin import AdminAuth, GroupAdmin, UserAdmin, UserGroupAssociationAdmin
 from app.core.config import settings
-from app.core.db import AsyncSessionLocal
+from app.core.db import AsyncSessionLocal, engine
 from app.handlers import base_handlers, callback, chat_member_handlers, handlers
 from app.keyboards.set_menu import main_menu
 from app.logs.logger import configure_logging
@@ -15,11 +17,8 @@ from app.sheduler.sheduler import (
     reset_can_receive_messages,
     scheduled_task_send_message_to_admin,
     scheduler,
+    send_a_birthday_greeting,
 )
-from sqladmin import Admin
-from app.core.db import engine
-from app.admin.admin import UserAdmin, GroupAdmin, UserGroupAssociationAdmin, AdminAuth
-
 
 app = FastAPI()
 
@@ -29,6 +28,7 @@ admin = Admin(
     app=app,
     engine=engine,
     authentication_backend=authentication_backend,
+    title='Telegram бот',
 )
 
 # Кнопки меню
@@ -39,7 +39,7 @@ admin.add_view(GroupAdmin)
 admin.add_view(UserGroupAssociationAdmin)
 
 
-async def main():
+async def start_aiogram():
     configure_logging('management_bot')
     logging.info('Запуск бота - management_bot.')
     bot = Bot(token=settings.management_bot_token)
@@ -55,18 +55,43 @@ async def main():
         reset_can_receive_messages,
         'cron',
         hour=16,
-        minute=40,
+        minute=30,
         timezone='Europe/Moscow',
     )
     scheduler.add_job(
         scheduled_task_send_message_to_admin,
         'cron',
         hour=19,
-        minute=45,
+        minute=40,
+        timezone='Europe/Moscow',
+        args=[bot],
+    )
+    scheduler.add_job(
+        send_a_birthday_greeting,
+        'cron',
+        hour=9,
+        minute=00,
         timezone='Europe/Moscow',
         args=[bot],
     )
     await dp.start_polling(bot)
+
+
+async def start_fastapi():
+    config = uvicorn.Config(
+        app,
+        host='0.0.0.0',
+        port=8000,
+        forwarded_allow_ips='*',
+        proxy_headers=True,
+    )
+
+    server = uvicorn.Server(config)
+    await server.serve()
+
+
+async def main():
+    await asyncio.gather(start_aiogram(), start_fastapi())
 
 
 if __name__ == '__main__':

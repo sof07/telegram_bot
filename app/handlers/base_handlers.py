@@ -1,17 +1,19 @@
+import logging
+
+import bcrypt
 from aiogram import Bot, F, Router, types
 from aiogram.filters import Command, CommandStart
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
-import bcrypt
 
+from app.core.config import settings
 from app.crud import crud_group, crud_user_group_association, user_crud
 from app.filters.filters import IsAdmin
-from app.models import UserGroupAssociation, User
-from app.services.services import chat_members
-from app.services.services import random_alphanumeric_string
-import logging
+from app.models import User, UserGroupAssociation
+from app.services.services import chat_members, random_alphanumeric_string
 
 router = Router()
+length_password = 10
 
 
 # Обрабатывает команду /start, если она отправлена из чата
@@ -102,7 +104,7 @@ async def access_to_the_admin_panel(message: types.Message, session: AsyncSessio
             user: User = await user_crud.get_user(
                 user_id=message.from_user.id, session=session
             )
-            password: str = random_alphanumeric_string(5)
+            password: str = random_alphanumeric_string(length_password)
             hash_password: str = bcrypt.hashpw(
                 password.encode('utf-8'), bcrypt.gensalt()
             ).decode('utf-8')
@@ -111,14 +113,15 @@ async def access_to_the_admin_panel(message: types.Message, session: AsyncSessio
                 db_obj=user, obj_in={'password': hash_password}, session=session
             )
             await message.answer(
-                f'Твой логин: {message.from_user.id}\n Пароль: {password}\n Ссылка на админку:'
+                f'Твой логин: {message.from_user.id}\n Пароль: {password}\n Ссылка на админку: {settings.admin_url}'
             )
-        await message.answer(
-            '❗Ты не админ ни в одной группе или не добавил бота в группу.\n'
-            'Добавь бота в группу, назначь его администратором, а потом возвращайся.'
-        )
+        else:
+            await message.answer(
+                '❗Ты не админ ни в одной группе или не добавил бота в группу.\n'
+                'Добавь бота в группу, назначь его администратором, а потом возвращайся.'
+            )
     except Exception as e:
-        logging.error(e)
+        logging.error(f'Сбой в команде admin:\n {e}\n')
 
 
 # Обрабатывает команду /help, если она отправлена в приватном чате
