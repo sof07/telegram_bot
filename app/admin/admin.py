@@ -1,4 +1,6 @@
 import bcrypt
+import logging
+from datetime import datetime
 from fastapi.requests import Request
 from itsdangerous.exc import BadSignature
 from itsdangerous.serializer import Serializer
@@ -10,6 +12,12 @@ from sqlalchemy.sql import select
 from app.core.db import AsyncSessionLocal
 from app.crud.user import user_crud
 from app.models import Group, User, UserGroupAssociation
+from app.core.config import settings
+
+
+def is_super_admin(user_id: int) -> bool:
+    if int(user_id) == int(settings.super_admin):
+        return True
 
 
 class AdminAuth(AuthenticationBackend):
@@ -60,6 +68,7 @@ class AdminAuth(AuthenticationBackend):
             data = username
             token = self.serializer.dumps(data)
             request.session.update({'token': token})
+            logging.info(f'Пользователь {username} вошел в админку в {datetime.now()}')
             return True
         return False
 
@@ -160,13 +169,20 @@ class UserAdmin(ModelView, model=User):
         user_id = token.split('.')[0].replace(
             '"', ''
         )  # ID пользователя который вошел в админку
+        if is_super_admin(user_id):
+            self.can_create = True
+            self.can_delete = True
+            self.can_view_details = True
+            return select(self.model)
+
         user_group_alias = aliased(UserGroupAssociation)
 
         # Подзапрос: выбираем группы, где текущий пользователь является админом
         admin_groups_subquery = (
             select(user_group_alias.group_id)
             .where(
-                user_group_alias.user_id == user_id, user_group_alias.is_admin.is_(True)
+                user_group_alias.user_id == user_id,
+                user_group_alias.is_admin.is_(True),
             )
             .subquery()
         )
@@ -193,6 +209,12 @@ class GroupAdmin(ModelView, model=Group):
     can_edit = True
     can_delete = True
     can_view_details = False
+
+    def is_visible(self, request: Request) -> bool:
+        token = request.session.get('token')
+        user_id = token.split('.')[0].replace('"', '')
+        if is_super_admin(user_id):
+            return True
 
 
 class UserGroupAssociationAdmin(ModelView, model=UserGroupAssociation):
@@ -238,7 +260,7 @@ class UserGroupAssociationAdmin(ModelView, model=UserGroupAssociation):
 
     can_create = False
     can_edit = True
-    can_delete = True
+    can_delete = False
     can_view_details = False
     page_size = 100
 
@@ -252,6 +274,12 @@ class UserGroupAssociationAdmin(ModelView, model=UserGroupAssociation):
         user_id = token.split('.')[0].replace(
             '"', ''
         )  # ID пользователя который вошел в админку
+        if is_super_admin(user_id):
+            self.can_create = True
+            self.can_delete = True
+            self.can_view_details = True
+            return select(self.model)
+
         user_group_alias = aliased(self.model)
 
         # Выбираем группы, где текущий пользователь является админом

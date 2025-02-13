@@ -40,5 +40,11 @@ class CRUDUser(CRUDBase):
         # <-- Принудительное сохранение изменений
         return data
 
+    async def get_super_admin(self, super_admin_id: int, session: AsyncSession):
+        super_admin = await session.execute(
+            select(self.model).where(self.model.user_id == super_admin_id)
+        )
+        return super_admin.scalars().first()
+
 
 user_crud = CRUDUser(User)

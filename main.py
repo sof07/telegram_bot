@@ -19,6 +19,7 @@ from app.sheduler.sheduler import (
     scheduler,
     send_a_birthday_greeting,
 )
+from app.services.services import create_super_admin
 
 app = FastAPI()
 
@@ -91,6 +92,7 @@ async def start_fastapi():
 
 
 async def main():
+    await create_super_admin()
     await asyncio.gather(start_aiogram(), start_fastapi())
 
 

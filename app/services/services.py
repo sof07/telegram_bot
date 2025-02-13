@@ -1,20 +1,58 @@
 import random
 import string
+import bcrypt
+import logging
 
 from aiogram import Bot
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.utils.markdown import bold
 from pyrogram import Client, utils
 from pyrogram.types import ChatMember
+from app.core.db import AsyncSessionLocal
+from app.models import User
+from app.crud import user_crud
 
 from app.core.config import settings
+
 
 api_id = settings.api_id
 api_hash = settings.api_hash
 bot_token = settings.management_bot_token
 
 
-# Исправляет ошибку в библиотеке pyrogram которая
+async def create_super_admin() -> None:
+    try:
+        async with AsyncSessionLocal() as session:
+            super_admin = await user_crud.get_super_admin(
+                super_admin_id=settings.super_admin, session=session
+            )
+            logging.info('Начинаем создание суперпользователя')
+            if not super_admin:
+                hash_password: str = bcrypt.hashpw(
+                    settings.password_super_admin.encode('utf-8'), bcrypt.gensalt()
+                ).decode('utf-8')
+
+                await user_crud.create(
+                    obj_in={
+                        'password': hash_password,
+                        'user_id': settings.super_admin,
+                        'user_name': 'superadmin',
+                        'first_name': 'superadmin',
+                        'last_name': 'superadmin',
+                    },
+                    session=session,
+                )
+                logging.info('Суперпользователь успешно создан')
+            else:
+                logging.info('Суперпользователь уже существует')
+    except Exception as e:
+        # Записываем исключение в логи для дальнейшего анализа
+        logging.error(f'Ошибка в создании суперпользователя: {e}')
+        return None
+
+    # Исправляет ошибку в библиотеке pyrogram которая
+
+
 # вызывает исключение Peer id invalid:
 def get_peer_type_new(peer_id: int) -> str:
     peer_id_str = str(peer_id)
