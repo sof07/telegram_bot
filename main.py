@@ -19,7 +19,7 @@ from app.sheduler.sheduler import (
     scheduler,
     send_a_birthday_greeting,
 )
-from app.services.services import create_super_admin
+from app.services.services import create_super_admin, apply_migrations
 
 app = FastAPI()
 
@@ -41,8 +41,6 @@ admin.add_view(UserGroupAssociationAdmin)
 
 
 async def start_aiogram():
-    configure_logging('management_bot')
-    logging.info('Запуск бота - management_bot.')
     bot = Bot(token=settings.management_bot_token)
     dp = Dispatcher(bot=bot)
     scheduler.start()  # Запуск планировщика задач
@@ -88,10 +86,13 @@ async def start_fastapi():
     )
 
     server = uvicorn.Server(config)
-    await server.serve()
+    asyncio.create_task(server.serve())
 
 
 async def main():
+    configure_logging('management_bot')
+    logging.info('Запуск бота - management_bot.')
+    await apply_migrations()
     await create_super_admin()
     await asyncio.gather(start_aiogram(), start_fastapi())
 
@@ -99,5 +100,5 @@ async def main():
 if __name__ == '__main__':
     try:
         asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        logging.error('Ошибка запуска бота')
+    except (KeyboardInterrupt, SystemExit, asyncio.CancelledError):
+        logging.info('Бот остановлен корректно.')

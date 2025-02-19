@@ -2,6 +2,8 @@ import random
 import string
 import bcrypt
 import logging
+import subprocess
+
 
 from aiogram import Bot
 from aiogram.enums.parse_mode import ParseMode
@@ -9,7 +11,7 @@ from aiogram.utils.markdown import bold
 from pyrogram import Client, utils
 from pyrogram.types import ChatMember
 from app.core.db import AsyncSessionLocal
-from app.models import User
+
 from app.crud import user_crud
 
 from app.core.config import settings
@@ -18,6 +20,23 @@ from app.core.config import settings
 api_id = settings.api_id
 api_hash = settings.api_hash
 bot_token = settings.management_bot_token
+
+
+async def apply_migrations():
+    """Применяет миграции Alembic при старте приложения."""
+    try:
+        logging.info('Применение миграций Alembic...')
+        result = subprocess.run(
+            ['alembic', 'upgrade', 'head'], capture_output=True, text=True
+        )
+
+        if result.returncode == 0:
+            logging.info('Миграции успешно применены.')
+        else:
+            logging.error(f'Ошибка при применении миграций: {result.stderr}')
+
+    except Exception as e:
+        logging.error(f'Ошибка при запуске миграций: {e}')
 
 
 async def create_super_admin() -> None:
